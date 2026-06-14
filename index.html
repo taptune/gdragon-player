@@ -1,78 +1,146 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>G-Dragon Vinyl</title>
+<title>G-DRAGON Vinyl</title>
 
 <style>
 
-body{
+*{
 margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
 background:#000;
 color:white;
-font-family:Arial,sans-serif;
 height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
+overflow:hidden;
 }
 
 .container{
 text-align:center;
+width:100%;
+max-width:500px;
+padding:20px;
 }
 
 .artist{
-letter-spacing:4px;
-color:#aaa;
-margin-bottom:30px;
 font-size:18px;
+letter-spacing:6px;
+color:#888;
+margin-bottom:20px;
+}
+
+.song{
+font-size:32px;
+font-weight:bold;
+margin-bottom:30px;
+padding:0 20px;
 }
 
 .vinyl{
-width:260px;
-height:260px;
-border-radius:50%;
+width:280px;
+height:280px;
 margin:auto;
+border-radius:50%;
+position:relative;
 
 background:
 repeating-radial-gradient(
 circle,
-#000 0px,
-#111 4px,
-#000 8px
+#111 0px,
+#222 3px,
+#111 6px,
+#000 9px
 );
 
-animation:spin 8s linear infinite;
+border:8px solid #333;
+
+animation:spin 3s linear infinite;
+
+box-shadow:
+0 0 30px rgba(255,255,255,0.08);
 }
 
-.song{
-font-size:28px;
+.vinyl::before{
+content:"";
+position:absolute;
+
+width:100px;
+height:100px;
+
+background:#111;
+
+border-radius:50%;
+
+top:50%;
+left:50%;
+
+transform:translate(-50%,-50%);
+}
+
+.vinyl::after{
+content:"GD";
+
+position:absolute;
+
+top:50%;
+left:50%;
+
+transform:translate(-50%,-50%);
+
+font-size:26px;
 font-weight:bold;
-margin-top:30px;
+color:white;
 }
 
-.sub{
-color:#777;
-margin-top:10px;
+.subtitle{
+margin-top:25px;
+color:#666;
+font-size:14px;
+letter-spacing:2px;
 }
 
 button{
 margin-top:25px;
-padding:14px 30px;
+padding:16px 35px;
+
 border:none;
 border-radius:999px;
+
+background:white;
+color:black;
+
 font-weight:bold;
+font-size:16px;
+
 cursor:pointer;
 }
 
+button:hover{
+opacity:.9;
+}
+
 @keyframes spin{
-from{transform:rotate(0deg);}
-to{transform:rotate(360deg);}
+from{
+transform:rotate(0deg);
+}
+to{
+transform:rotate(360deg);
+}
 }
 
 </style>
+
 </head>
 
 <body>
@@ -83,14 +151,14 @@ to{transform:rotate(360deg);}
 G-DRAGON
 </div>
 
-<div class="vinyl"></div>
-
 <div class="song" id="songName">
 Loading...
 </div>
 
-<div class="sub">
-Today's Random Pick
+<div class="vinyl"></div>
+
+<div class="subtitle">
+TODAY'S RANDOM PICK
 </div>
 
 <button onclick="pickSong()">
@@ -102,11 +170,12 @@ Today's Random Pick
 <script>
 
 const songs = [
+
 "CROOKED",
-"Heartbreaker",
-"WHO YOU?",
-"Crayon",
 "That XX",
+"Crayon",
+"WHO YOU?",
+"Heartbreaker",
 "One Of A Kind",
 "Missing You",
 "TOO BAD",
@@ -132,12 +201,13 @@ const songs = [
 "GYRO-DROP",
 "I LOVE IT",
 "The Leaders"
+
 ];
 
 function pickSong(){
 
 const randomSong =
-songs[Math.floor(Math.random()*songs.length)];
+songs[Math.floor(Math.random() * songs.length)];
 
 document.getElementById("songName").innerText =
 randomSong;
@@ -149,4 +219,5 @@ pickSong();
 </script>
 
 </body>
+
 </html>
