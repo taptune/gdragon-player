@@ -1,13 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-<title>G-Dragon NFC</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>G-Dragon Vinyl</title>
+
+<style>
+
+body{
+margin:0;
+background:#000;
+color:white;
+font-family:Arial,sans-serif;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.container{
+text-align:center;
+}
+
+.artist{
+letter-spacing:4px;
+color:#aaa;
+margin-bottom:30px;
+font-size:18px;
+}
+
+.vinyl{
+width:260px;
+height:260px;
+border-radius:50%;
+margin:auto;
+
+background:
+repeating-radial-gradient(
+circle,
+#000 0px,
+#111 4px,
+#000 8px
+);
+
+animation:spin 8s linear infinite;
+}
+
+.song{
+font-size:28px;
+font-weight:bold;
+margin-top:30px;
+}
+
+.sub{
+color:#777;
+margin-top:10px;
+}
+
+button{
+margin-top:25px;
+padding:14px 30px;
+border:none;
+border-radius:999px;
+font-weight:bold;
+cursor:pointer;
+}
+
+@keyframes spin{
+from{transform:rotate(0deg);}
+to{transform:rotate(360deg);}
+}
+
+</style>
 </head>
-<body style="background:black;color:white;text-align:center;padding-top:100px;font-family:Arial">
 
-<h1>G-DRAGON</h1>
+<body>
 
-<h2>Hello NFC World 🎵</h2>
+<div class="container">
+
+<div class="artist">
+G-DRAGON
+</div>
+
+<div class="vinyl"></div>
+
+<div class="song" id="songName">
+Loading...
+</div>
+
+<div class="sub">
+Today's Random Pick
+</div>
+
+<button onclick="pickSong()">
+🎲 RANDOM SONG
+</button>
+
+</div>
+
+<script>
+
+const songs = [
+"CROOKED",
+"Heartbreaker",
+"WHO YOU?",
+"Crayon",
+"That XX",
+"One Of A Kind",
+"Missing You",
+"TOO BAD",
+"Untitled, 2014",
+"BLACK",
+"Without You",
+"POWER",
+"R.O.D.",
+"COUP D'ETAT",
+"A Boy",
+"TAKE ME",
+"Today",
+"GO",
+"DRAMA",
+"Breathe",
+"SHAKE THE WORLD",
+"HOME SWEET HOME",
+"IBELONGIIU",
+"RUNAWAY",
+"NILIRIA",
+"Hello",
+"BONAMANA",
+"GYRO-DROP",
+"I LOVE IT",
+"The Leaders"
+];
+
+function pickSong(){
+
+const randomSong =
+songs[Math.floor(Math.random()*songs.length)];
+
+document.getElementById("songName").innerText =
+randomSong;
+
+}
+
+pickSong();
+
+</script>
 
 </body>
 </html>
