@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
 
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>G-DRAGON Vinyl</title>
+<title>G-DRAGON NFC Player</title>
 
 <style>
 
@@ -13,44 +13,47 @@
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:Arial,sans-serif;
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
 body{
 background:#000;
 color:white;
-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-overflow:hidden;
-}
-
-.container{
-text-align:center;
-width:100%;
-max-width:500px;
+min-height:100vh;
 padding:20px;
 }
 
+.container{
+width:100%;
+max-width:500px;
+text-align:center;
+}
+
 .artist{
-font-size:18px;
+font-size:16px;
 letter-spacing:6px;
-color:#888;
-margin-bottom:20px;
+color:#999;
+margin-bottom:15px;
 }
 
 .song{
-font-size:32px;
-font-weight:bold;
+font-size:34px;
+font-weight:700;
 margin-bottom:30px;
+min-height:80px;
+display:flex;
+align-items:center;
+justify-content:center;
 padding:0 20px;
 }
 
 .vinyl{
 width:280px;
 height:280px;
-margin:auto;
+margin:0 auto 30px auto;
 border-radius:50%;
 position:relative;
 
@@ -60,27 +63,27 @@ circle,
 #111 0px,
 #222 3px,
 #111 6px,
-#000 9px
+#000 10px
 );
 
 border:8px solid #333;
 
-animation:spin 3s linear infinite;
+animation:spin 4s linear infinite;
 
 box-shadow:
-0 0 30px rgba(255,255,255,0.08);
+0 0 25px rgba(255,255,255,.08);
 }
 
 .vinyl::before{
 content:"";
 position:absolute;
 
-width:100px;
-height:100px;
-
-background:#111;
+width:90px;
+height:90px;
 
 border-radius:50%;
+
+background:#111;
 
 top:50%;
 left:50%;
@@ -103,33 +106,6 @@ font-weight:bold;
 color:white;
 }
 
-.subtitle{
-margin-top:25px;
-color:#666;
-font-size:14px;
-letter-spacing:2px;
-}
-
-button{
-margin-top:25px;
-padding:16px 35px;
-
-border:none;
-border-radius:999px;
-
-background:white;
-color:black;
-
-font-weight:bold;
-font-size:16px;
-
-cursor:pointer;
-}
-
-button:hover{
-opacity:.9;
-}
-
 @keyframes spin{
 from{
 transform:rotate(0deg);
@@ -137,6 +113,38 @@ transform:rotate(0deg);
 to{
 transform:rotate(360deg);
 }
+}
+
+.subtitle{
+color:#777;
+font-size:13px;
+letter-spacing:3px;
+margin-bottom:25px;
+}
+
+button{
+border:none;
+padding:15px 28px;
+border-radius:999px;
+cursor:pointer;
+font-size:15px;
+font-weight:600;
+margin:8px;
+}
+
+.play-btn{
+background:white;
+color:black;
+}
+
+.random-btn{
+background:#222;
+color:white;
+}
+
+audio{
+width:100%;
+margin-top:20px;
 }
 
 </style>
@@ -161,69 +169,76 @@ Loading...
 TODAY'S RANDOM PICK
 </div>
 
-<button onclick="pickSong()">
+<button class="play-btn" onclick="playSong()">
+▶ PLAY SONG
+</button>
+
+<button class="random-btn" onclick="pickSong()">
 🎲 RANDOM SONG
 </button>
+
+<audio id="audioPlayer" controls></audio>
 
 </div>
 
 <script>
 
+let currentSong;
+
 const songs = [
 
-"CROOKED",
-"That XX",
-"Crayon",
-"WHO YOU?",
-"Heartbreaker",
-"One Of A Kind",
-"Missing You",
-"TOO BAD",
-"Untitled, 2014",
-"BLACK",
-"Without You",
-"POWER",
-"R.O.D.",
-"COUP D'ETAT",
-"A Boy",
-"TAKE ME",
-"Today",
-"GO",
-"DRAMA",
-"Breathe",
-"SHAKE THE WORLD",
-"HOME SWEET HOME",
-"IBELONGIIU",
-"RUNAWAY",
-"NILIRIA",
-"Hello",
-"BONAMANA",
-"GYRO-DROP",
-"I LOVE IT",
-"The Leaders"
+{ title:"A Boy", file:"A_Boy-GDragon.mp3" },
+{ title:"BLACK", file:"Black-GDragon.mp3" },
+{ title:"Breathe", file:"Breathe-GDragon.mp3" },
+{ title:"Bullshit", file:"Bullshit-GDragon.mp3" },
+{ title:"COUP D'ETAT", file:"Coup_d'Etat-GDragon.mp3" },
+{ title:"Crayon", file:"Crayon-GDragon.mp3" },
+{ title:"CROOKED", file:"Crooked-GDragon.mp3" },
+{ title:"Heartbreaker", file:"Heartbreaker-GDragon.mp3" },
+{ title:"HOME SWEET HOME", file:"Home_Sweet_Home-GDragon.mp3" },
+{ title:"Missing You", file:"Missing_You-GDragon.mp3" },
+{ title:"One Of A Kind", file:"One_Of_A_Kind-GDragon.mp3" },
+{ title:"POWER", file:"Power-GDragon.mp3" },
+{ title:"R.O.D.", file:"R.O.D-GDragon.mp3" },
+{ title:"That XX", file:"That_XX-GDragon.mp3" },
+{ title:"Today", file:"Today-GDragon.mp3" },
+{ title:"TOO BAD", file:"Too_Bad-GDragon.mp3" },
+{ title:"Untitled, 2014", file:"Untitled,2014-GDragon.mp3" },
+{ title:"WHO YOU?", file:"Who_You_-GDragon.mp3" },
+{ title:"Window", file:"Window-GDragon.mp3" },
+{ title:"Without You", file:"Without_You-GDragon.mp3" }
 
 ];
 
 function pickSong(){
 
-const randomSong =
-songs[Math.floor(Math.random() * songs.length)];
+currentSong =
+songs[Math.floor(Math.random()*songs.length)];
 
 document.getElementById("songName").innerText =
-randomSong;
+currentSong.title;
+
+const player =
+document.getElementById("audioPlayer");
+
+player.pause();
+player.src = currentSong.file;
+player.load();
+
+}
+
+function playSong(){
+
+const player =
+document.getElementById("audioPlayer");
+
+player.play();
 
 }
 
 pickSong();
 
 </script>
-  
-<h2>MP3 Test</h2>
 
-<audio controls>
-  <source src="Crooked-GDragon.mp3" type="audio/mpeg">
-</audio>
-  
 </body>
-
 </html>
