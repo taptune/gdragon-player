@@ -24,6 +24,7 @@ justify-content:center;
 align-items:center;
 min-height:100vh;
 padding:20px;
+overflow:hidden;
 }
 
 .container{
@@ -36,7 +37,7 @@ text-align:center;
 font-size:16px;
 letter-spacing:6px;
 color:#999;
-margin-bottom:15px;
+margin-bottom:20px;
 }
 
 .song{
@@ -53,7 +54,7 @@ padding:0 20px;
 .vinyl{
 width:280px;
 height:280px;
-margin:0 auto 30px auto;
+margin:0 auto 25px auto;
 border-radius:50%;
 position:relative;
 
@@ -71,7 +72,7 @@ border:8px solid #333;
 animation:spin 4s linear infinite;
 
 box-shadow:
-0 0 25px rgba(255,255,255,.08);
+0 0 30px rgba(255,255,255,.08);
 }
 
 .vinyl::before{
@@ -81,9 +82,9 @@ position:absolute;
 width:90px;
 height:90px;
 
-border-radius:50%;
-
 background:#111;
+
+border-radius:50%;
 
 top:50%;
 left:50%;
@@ -101,18 +102,9 @@ left:50%;
 
 transform:translate(-50%,-50%);
 
-font-size:26px;
+font-size:28px;
 font-weight:bold;
 color:white;
-}
-
-@keyframes spin{
-from{
-transform:rotate(0deg);
-}
-to{
-transform:rotate(360deg);
-}
 }
 
 .subtitle{
@@ -122,29 +114,36 @@ letter-spacing:3px;
 margin-bottom:25px;
 }
 
-button{
+.random-btn{
 border:none;
-padding:15px 28px;
+padding:18px 35px;
 border-radius:999px;
 cursor:pointer;
-font-size:15px;
-font-weight:600;
-margin:8px;
-}
 
-.play-btn{
+font-size:16px;
+font-weight:700;
+
 background:white;
 color:black;
+
+transition:.2s;
 }
 
-.random-btn{
-background:#222;
-color:white;
+.random-btn:hover{
+transform:scale(1.05);
 }
 
 audio{
-width:100%;
-margin-top:20px;
+display:none;
+}
+
+@keyframes spin{
+from{
+transform:rotate(0deg);
+}
+to{
+transform:rotate(360deg);
+}
 }
 
 </style>
@@ -160,7 +159,7 @@ G-DRAGON
 </div>
 
 <div class="song" id="songName">
-Loading...
+Tap Below
 </div>
 
 <div class="vinyl"></div>
@@ -169,15 +168,11 @@ Loading...
 TODAY'S RANDOM PICK
 </div>
 
-<button class="play-btn" onclick="playSong()">
-▶ PLAY SONG
-</button>
-
 <button class="random-btn" onclick="pickSong()">
-🎲 RANDOM SONG
+🎲 PLAY RANDOM SONG
 </button>
 
-<audio id="audioPlayer" controls></audio>
+<audio id="audioPlayer"></audio>
 
 </div>
 
@@ -213,7 +208,7 @@ const songs = [
 function pickSong(){
 
 currentSong =
-songs[Math.floor(Math.random()*songs.length)];
+songs[Math.floor(Math.random() * songs.length)];
 
 document.getElementById("songName").innerText =
 currentSong.title;
@@ -222,21 +217,17 @@ const player =
 document.getElementById("audioPlayer");
 
 player.pause();
-player.src = currentSong.file;
+
+player.src =
+currentSong.file;
+
 player.load();
 
-}
-
-function playSong(){
-
-const player =
-document.getElementById("audioPlayer");
-
-player.play();
+player.play().catch(() => {
+console.log("Playback blocked");
+});
 
 }
-
-pickSong();
 
 </script>
 
