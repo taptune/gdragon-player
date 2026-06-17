@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>G-DRAGON Surprise Player</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;-webkit-tap-highlight-color:transparent;}
+:root{
+  --vinyl-size:280px;
+  --sleeve-size:300px;
+  --sleeve-left-x:-142px;
+  --scene-center-y:174px;
+}
+body{
+  background:radial-gradient(circle at top,rgba(255,255,255,.08),transparent 34%),#000;
+  color:#fff;display:flex;justify-content:center;align-items:center;min-height:100vh;
+  padding:20px;overflow-x:hidden;
+}
+#bootCover{position:fixed;inset:0;background:#000;z-index:99999;opacity:1;transition:opacity .35s ease;pointer-events:none;}
+.container{width:100%;max-width:520px;text-align:center;}
+.artist{font-size:16px;letter-spacing:6px;color:#999;margin-bottom:18px;}
+.song{font-size:34px;font-weight:900;margin-bottom:18px;min-height:78px;display:flex;align-items:center;justify-content:center;padding:0 20px;line-height:1.05;text-shadow:4px 4px 0 rgba(0,90,255,.55);}
+.record-scene{width:100%;max-width:390px;height:350px;margin:0 auto 18px;position:relative;overflow:visible;perspective:1200px;}
+.sleeve-layer{
+  position:absolute;width:var(--sleeve-size);height:var(--sleeve-size);left:50%;top:calc(var(--scene-center-y) - (var(--sleeve-size) / 2));
+  transform:translateX(calc(-50% + var(--sleeve-x,0px)));
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  pointer-events:none;opacity:1;visibility:visible;
+  transition:transform .78s cubic-bezier(.22,.9,.18,1),opacity .42s ease,visibility 0s linear .42s;
+}
+.sleeve-back{background-image:url("images/sleeve-back.jpg");z-index:2;filter:brightness(.82) drop-shadow(0 22px 38px rgba(0,0,0,.55));}
+.sleeve-top{background-image:url("images/sleeve-top.png");z-index:5;filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));}
+.sleeve-left{--sleeve-x:var(--sleeve-left-x);}
+.sleeve-hidden{opacity:0!important;visibility:hidden!important;}
+.record-wrap{
+  width:var(--vinyl-size);height:var(--vinyl-size);position:absolute;left:50%;top:calc(var(--scene-center-y) - (var(--vinyl-size) / 2));
+  transform:translateX(calc(-50% + var(--record-x,0px))) scale(var(--record-scale,1));
+  transform-origin:center center;z-index:3;cursor:pointer;
+  transition:transform .86s cubic-bezier(.22,.9,.18,1),opacity .25s ease,filter .45s ease;
+}
+.record-wrap.in-sleeve{--record-scale:.78;filter:brightness(.88);}
+.record-wrap.left{--record-x:var(--sleeve-left-x);}
+.record-wrap.hidden{opacity:0;}
+.record-flip{
+  position:relative;width:100%;height:100%;transform-style:preserve-3d;
+}
+.record-flip.flipping{animation:realFlip .78s cubic-bezier(.22,.9,.18,1);}
+.vinyl{
+  width:100%;height:100%;border-radius:50%;position:relative;overflow:hidden;background:#050505;
+  animation:spin 7.5s linear infinite;animation-play-state:paused;
+  box-shadow:0 30px 65px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.08),inset 0 0 45px rgba(255,255,255,.045),inset 0 0 70px rgba(0,0,0,.75);
+}
+.vinyl.playing{animation-play-state:running;}
+.album-art{position:absolute;inset:0;border-radius:50%;background-size:cover;background-position:center;z-index:1;}
+.grooves{position:absolute;inset:0;border-radius:50%;background:
+  repeating-radial-gradient(circle,transparent 0,transparent 3px,rgba(0,0,0,.24) 4px,rgba(0,0,0,.24) 5px),
+  radial-gradient(circle at 31% 23%,rgba(255,255,255,.24),transparent 17%),
+  linear-gradient(130deg,transparent 8%,rgba(255,255,255,.18) 20%,transparent 34%,transparent 64%,rgba(255,255,255,.07) 75%,transparent 88%);
+  mix-blend-mode:screen;z-index:2;pointer-events:none;
+}
+.vinyl::after{content:"";position:absolute;inset:0;border-radius:50%;background:
+  radial-gradient(circle,transparent 0 36%,rgba(0,0,0,.10) 45%,rgba(0,0,0,.34) 75%,rgba(0,0,0,.68) 100%),
+  linear-gradient(135deg,rgba(255,255,255,.16),transparent 25%,transparent 70%,rgba(255,255,255,.08));
+  z-index:3;pointer-events:none;
+}
+.center-label{
+  position:absolute;width:96px;height:96px;top:50%;left:50%;transform:translate(-50%,-50%);
+  border-radius:50%;z-index:4;pointer-events:none;
+  box-shadow:0 0 0 6px rgba(0,0,0,.72),inset 0 0 0 1px rgba(255,255,255,.10),0 8px 20px rgba(0,0,0,.45);
+  background:radial-gradient(circle,rgba(255,255,255,.08) 0 16px,rgba(0,0,0,.12) 17px 30px,rgba(255,255,255,.08) 31px 48px,rgba(0,0,0,.18) 49px 100%);
+}
+.center-label::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,.18),transparent 30%,transparent 70%,rgba(255,255,255,.06));opacity:.9;}
+.spindle{position:absolute;width:10px;height:10px;border-radius:50%;background:#050505;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;border:1px solid rgba(255,255,255,.35);box-shadow:0 0 10px rgba(0,0,0,.85);}
+.tonearm{
+  position:absolute;width:148px;height:104px;right:-5px;top:4px;z-index:10;
+  transform-origin:121px 23px;
+  transform:rotate(-18deg) translate(16px,-12px);
+  transition:transform .45s cubic-bezier(.2,.85,.2,1),opacity .35s ease;
+  pointer-events:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55));
+}
+.tonearm.on-record{transform:rotate(8deg) translate(0,0);}
+.tonearm-base{position:absolute;width:46px;height:46px;right:0;top:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fafafa 0 8%,#aaa 35%,#222 70%,#050505 100%);box-shadow:0 10px 22px rgba(0,0,0,.65),inset 0 2px 5px rgba(255,255,255,.3),inset 0 -6px 10px rgba(0,0,0,.5);}
+.tonearm-pivot{position:absolute;width:14px;height:14px;right:16px;top:16px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#aaa 45%,#444 70%,#111 100%);}
+.tonearm-bar{position:absolute;width:112px;height:9px;right:27px;top:18px;border-radius:999px;transform:rotate(-28deg);transform-origin:right center;background:linear-gradient(180deg,#fff,#cfcfcf 20%,#777 55%,#eee 100%);box-shadow:0 6px 12px rgba(0,0,0,.35),inset 0 1px 2px rgba(255,255,255,.55);}
+.counterweight{position:absolute;width:22px;height:14px;right:103px;top:31px;border-radius:10px;transform:rotate(-28deg);background:linear-gradient(180deg,#ddd,#777 48%,#2e2e2e 100%);}
+.headshell{position:absolute;width:24px;height:16px;left:10px;top:48px;transform:rotate(-28deg);border-radius:4px 4px 6px 6px;background:linear-gradient(180deg,#eee,#999 42%,#333 100%);}
+.stylus{position:absolute;width:12px;height:26px;left:4px;top:55px;transform:rotate(-28deg);}
+.stylus::before{content:"";position:absolute;left:2px;top:0;width:8px;height:12px;border-radius:2px;background:linear-gradient(180deg,#eee,#888 45%,#222 100%);}
+.stylus::after{content:"";position:absolute;left:5px;top:10px;width:2px;height:14px;background:linear-gradient(180deg,#eee,#575757 75%,#111 100%);transform:skewX(-10deg);}
+.subtitle{color:#777;font-size:12px;letter-spacing:3.5px;margin-bottom:18px;}
+.progress-area{width:100%;max-width:340px;margin:0 auto 22px;}
+.progress-bar{width:100%;height:5px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden;cursor:pointer;}
+.progress-fill{width:0%;height:100%;border-radius:inherit;background:#fff;transition:width .12s linear;}
+.time-row{display:flex;justify-content:space-between;margin-top:8px;color:#777;font-size:12px;letter-spacing:1px;}
+.random-btn{border:none;padding:18px 36px;border-radius:999px;cursor:pointer;font-size:16px;font-weight:800;background:#fff;color:#000;box-shadow:0 15px 35px rgba(255,255,255,.12);}
+.random-btn:disabled{opacity:.55;cursor:not-allowed;}
+audio{display:none;}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes realFlip{0%{transform:scaleX(1);filter:brightness(1)}48%{transform:scaleX(.05);filter:brightness(1.35)}52%{transform:scaleX(.05);filter:brightness(1.35)}100%{transform:scaleX(1);filter:brightness(1)}}
+@media(max-width:430px){
+  :root{--vinyl-size:260px;--sleeve-size:280px;--sleeve-left-x:-130px;--scene-center-y:168px}
+  .record-scene{height:330px}
+  .center-label{width:88px;height:88px}
+  .tonearm{right:-9px;top:2px;transform:rotate(-18deg) translate(16px,-12px) scale(.9)}
+  .tonearm.on-record{transform:rotate(8deg) translate(0,0) scale(.9)}
+}
+</style>
+</head>
+<body>
+<div id="bootCover"></div>
+<div class="container">
+  <div class="artist">G-DRAGON</div>
+  <div class="song" id="songName">🌼 SURPRISE ME</div>
+  <div class="record-scene" id="recordScene">
+    <div class="sleeve-layer sleeve-back" id="sleeveBack"></div>
+    <div class="record-wrap in-sleeve" id="recordWrap" aria-label="vinyl controls">
+      <div class="record-flip" id="recordFlip">
+        <div class="vinyl" id="vinyl">
+          <div class="album-art" id="albumArt"></div>
+          <div class="center-label"></div>
+          <div class="grooves"></div>
+          <div class="spindle"></div>
+        </div>
+      </div>
+    </div>
+    <div class="sleeve-layer sleeve-top" id="sleeveTop"></div>
+    <div class="tonearm" id="tonearm">
+      <div class="tonearm-base"></div><div class="tonearm-pivot"></div><div class="tonearm-bar"></div><div class="counterweight"></div><div class="headshell"></div><div class="stylus"></div>
+    </div>
+  </div>
+  <div class="subtitle">SCAN • TAP • DISCOVER</div>
+  <div class="progress-area">
+    <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="time-row"><span id="currentTime">0:00</span><span id="durationTime">0:00</span></div>
+  </div>
+  <button class="random-btn" id="surpriseBtn">🌼 SURPRISE ME</button>
+  <audio id="audioPlayer" preload="auto"></audio>
+</div>
+
+<script>
+const gdImages=["images/Gdragon1.jpg","images/Gdragon2.jpg"];
+const songs=[
+{title:"A Boy",file:"music/A_Boy-GDragon.mp3",images:["images/Heartbreaker1.jpg","images/Heartbreaker2.jpg"]},
+{title:"BLACK",file:"music/Black-GDragon.mp3",images:["images/Coup_d'Etat1.jpg","images/Coup_d'Etat2.jpg"]},
+{title:"Breathe",file:"music/Breathe-GDragon.mp3",images:["images/Heartbreaker1.jpg","images/Heartbreaker2.jpg"]},
+{title:"Bullshit",file:"music/Bullshit-GDragon.mp3",images:["images/Untitled,(2014)1.jpg","images/Untitled,(2014)2.jpg"]},
+{title:"COUP D'ETAT",file:"music/Coup_d'Etat-GDragon.mp3",images:["images/Coup_d'Etat1.jpg","images/Coup_d'Etat2.jpg"]},
+{title:"Crayon",file:"music/Crayon-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]},
+{title:"CROOKED",file:"music/Crooked-GDragon.mp3",images:["images/Coup_d'Etat1.jpg","images/Coup_d'Etat2.jpg"]},
+{title:"Heartbreaker",file:"music/Heartbreaker-GDragon.mp3",images:["images/Heartbreaker1.jpg","images/Heartbreaker2.jpg"]},
+{title:"HOME SWEET HOME",file:"music/Home_Sweet_Home-GDragon.mp3",images:["images/ubermensch1.jpg","images/ubermensch2.png"]},
+{title:"Missing You",file:"music/Missing_You-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]},
+{title:"One Of A Kind",file:"music/One_Of_A_Kind-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]},
+{title:"POWER",file:"music/Power-GDragon.mp3",images:["images/Power1.jpg","images/Power2.jpg"]},
+{title:"R.O.D.",file:"music/R.O.D-GDragon.mp3",images:["images/Coup_d'Etat1.jpg","images/Coup_d'Etat2.jpg"]},
+{title:"That XX",file:"music/That_XX-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]},
+{title:"Today",file:"music/Today-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]},
+{title:"TOO BAD",file:"music/Too_Bad-GDragon.mp3",images:["images/ubermensch1.jpg","images/ubermensch2.png"]},
+{title:"Untitled, 2014",file:"music/Untitled,2014-GDragon.mp3",images:["images/Untitled,(2014)1.jpg","images/Untitled,(2014)2.jpg"]},
+{title:"WHO YOU?",file:"music/Who_You_-GDragon.mp3",images:["images/Coup_d'Etat1.jpg","images/Coup_d'Etat2.jpg"]},
+{title:"Window",file:"music/Window-GDragon.mp3",images:["images/Heartbreaker1.jpg","images/Heartbreaker2.jpg"]},
+{title:"Without You",file:"music/Without_You-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]}
+];
+
+const player=document.getElementById("audioPlayer");
+const songName=document.getElementById("songName");
+const albumArt=document.getElementById("albumArt");
+const vinyl=document.getElementById("vinyl");
+const recordWrap=document.getElementById("recordWrap");
+const recordFlip=document.getElementById("recordFlip");
+const sleeveBack=document.getElementById("sleeveBack");
+const sleeveTop=document.getElementById("sleeveTop");
+const tonearm=document.getElementById("tonearm");
+const surpriseBtn=document.getElementById("surpriseBtn");
+
+const preloadImageCache = new Set();
+function preloadOneImage(src){
+  if(!src || preloadImageCache.has(src)) return;
+  const img = new Image();
+  img.src = src;
+  preloadImageCache.add(src);
+}
+function preloadAllImages(){
+  gdImages.forEach(preloadOneImage);
+  songs.forEach(song=>{
+    (song.images || []).forEach(preloadOneImage);
+  });
+}
+
+const progressBar=document.getElementById("progressBar");
+const progressFill=document.getElementById("progressFill");
+const currentTimeEl=document.getElementById("currentTime");
+const durationTimeEl=document.getElementById("durationTime");
+
+let currentSong=null,albumMode=true,imageIndex=0,imageTimer=null,playlist=[],playlistIndex=0,playlistStarted=false,isTransitioning=false;
+
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function buildPlaylist(){playlist=shuffle(songs);playlistIndex=0;}
+function nextSong(){if(!playlistStarted){buildPlaylist();playlistStarted=true;return playlist[playlistIndex];}playlistIndex++;if(playlistIndex>=playlist.length)buildPlaylist();return playlist[playlistIndex];}
+function currentImages(){if(!currentSong)return gdImages;return albumMode?(currentSong.images||gdImages):gdImages;}
+function updateImage(){
+  const imgs = currentImages();
+  const safeImgs = (imgs && imgs.length) ? imgs : gdImages;
+  const src = safeImgs[imageIndex % safeImgs.length];
+  if(src){
+    albumArt.style.backgroundImage = `url('${src}')`;
+    preloadOneImage(src);
+  }
+}
+function resetToAlbum(){
+  albumMode = true;
+  imageIndex = 0;
+  recordFlip.classList.remove("flipping");
+  if(currentSong && currentSong.images && currentSong.images.length){
+    albumArt.style.backgroundImage = `url('${currentSong.images[0]}')`;
+  }
+  updateImage();
+}
+function startImageRotation(){clearInterval(imageTimer);if(player.paused||!currentSong||isTransitioning)return;imageTimer=setInterval(()=>{if(player.paused||isTransitioning)return;imageIndex=(imageIndex+1)%currentImages().length;updateImage();},5000);}
+function stopImageRotation(){clearInterval(imageTimer);}
+function setSleeveLeft(left){sleeveBack.classList.toggle("sleeve-left",left);sleeveTop.classList.toggle("sleeve-left",left);recordWrap.classList.toggle("left",left);}
+function showSleeve(){[sleeveBack,sleeveTop].forEach(el=>{el.classList.remove("sleeve-hidden");el.style.display="block";});}
+function hideSleeve(){[sleeveBack,sleeveTop].forEach(el=>el.classList.add("sleeve-hidden"));}
+function prepareAudio(song){return new Promise(resolve=>{let done=false;function finish(){if(done)return;done=true;player.removeEventListener("canplay",finish);player.removeEventListener("error",finish);resolve();}player.addEventListener("canplay",finish,{once:true});player.addEventListener("error",finish,{once:true});player.src=song.file;player.load();setTimeout(finish,3000);});}
+function formatTime(s){if(!Number.isFinite(s))return"0:00";return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,"0")}`;}
+
+async function transitionToSong(song){
+  if(isTransitioning)return;
+  isTransitioning=true;
+  surpriseBtn.disabled=true;
+  stopImageRotation();
+  player.pause();
+  vinyl.classList.remove("playing");
+  tonearm.classList.remove("on-record");
+
+  // sleeve fades in first
+  showSleeve();
+  await wait(240);
+
+  // then tape shoves back in
+  recordWrap.classList.add("in-sleeve");
+  setSleeveLeft(!!currentSong);
+  await wait(currentSong?520:140);
+
+  currentSong=song;
+  if(currentSong.images && currentSong.images.length){ preloadOneImage(currentSong.images[0]); }
+  resetToAlbum();
+  songName.textContent="🌼 Selecting...";
+  resetProgress();
+
+  const audioReady=prepareAudio(song);
+
+  if(!recordWrap.classList.contains("left")){
+    setSleeveLeft(true);
+    await wait(820);
+  }
+
+  // pull out from sleeve: record moves from the left sleeve back to the center
+  // sleeve stays left, but the tape leaves the sleeve and ends in the middle
+  recordWrap.classList.remove("in-sleeve","left");
+  await wait(920);
+
+  hideSleeve();
+  await wait(380);
+  await audioReady;
+
+  songName.textContent=song.title;
+  try{player.currentTime=0;await player.play();}catch(e){songName.textContent=song.title+" • tap vinyl to play";}
+  surpriseBtn.disabled=false;
+  isTransitioning=false;
+}
+
+async function toggleMode(){
+  if(isTransitioning||!currentSong)return;
+  isTransitioning=true;
+  stopImageRotation();
+  tonearm.classList.remove("on-record");
+  await wait(220);
+
+  recordFlip.classList.add("flipping");
+  await wait(390);
+  albumMode=!albumMode;
+  imageIndex=0;
+  updateImage();
+  songName.textContent=albumMode?"💿 ALBUM MODE":"👑 G-DRAGON MODE";
+  await wait(420);
+  recordFlip.classList.remove("flipping");
+  await wait(160);
+
+  songName.textContent=currentSong.title;
+  if(!player.paused){tonearm.classList.add("on-record");startImageRotation();}
+  isTransitioning=false;
+}
+
+function resetProgress(){progressFill.style.width="0%";currentTimeEl.textContent="0:00";durationTimeEl.textContent="0:00";}
+surpriseBtn.addEventListener("click",()=>transitionToSong(nextSong()));
+player.addEventListener("ended",()=>transitionToSong(nextSong()));
+player.addEventListener("play",()=>{vinyl.classList.add("playing");tonearm.classList.add("on-record");startImageRotation();});
+player.addEventListener("pause",()=>{vinyl.classList.remove("playing");tonearm.classList.remove("on-record");stopImageRotation();});
+player.addEventListener("timeupdate",()=>{if(!Number.isFinite(player.duration)||player.duration<=0)return;progressFill.style.width=`${(player.currentTime/player.duration)*100}%`;currentTimeEl.textContent=formatTime(player.currentTime);durationTimeEl.textContent=formatTime(player.duration);});
+player.addEventListener("loadedmetadata",()=>durationTimeEl.textContent=formatTime(player.duration));
+progressBar.addEventListener("click",e=>{if(!Number.isFinite(player.duration)||player.duration<=0)return;const rect=progressBar.getBoundingClientRect();player.currentTime=Math.max(0,Math.min(player.duration,player.duration*((e.clientX-rect.left)/rect.width)));});
+
+let holdTimer=null,holdTriggered=false,tapCount=0,tapTimer=null;
+function startHold(){holdTriggered=false;holdTimer=setTimeout(()=>{holdTriggered=true;toggleMode();},900);}
+function cancelHold(){clearTimeout(holdTimer);}
+function handleTap(){if(isTransitioning)return;tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>{if(tapCount===1){if(!currentSong)return;if(player.paused)player.play().catch(()=>{});else player.pause();}else{if(!currentSong)return;const imgs=currentImages(); if(imgs && imgs.length){ const nextIdx=(imageIndex+1)%imgs.length; preloadOneImage(imgs[nextIdx]); imageIndex=nextIdx; updateImage(); } if(!player.paused)startImageRotation();}tapCount=0;},240);}
+recordWrap.addEventListener("mousedown",startHold);
+recordWrap.addEventListener("mouseup",()=>{cancelHold();if(!holdTriggered)handleTap();});
+recordWrap.addEventListener("mouseleave",cancelHold);
+recordWrap.addEventListener("touchstart",e=>{e.preventDefault();startHold();},{passive:false});
+recordWrap.addEventListener("touchend",e=>{e.preventDefault();cancelHold();if(!holdTriggered)handleTap();},{passive:false});
+recordWrap.addEventListener("touchmove",cancelHold,{passive:true});
+
+updateImage();
+showSleeve();
+setSleeveLeft(false);
+recordWrap.classList.remove("left");
+recordWrap.classList.add("in-sleeve");
+window.addEventListener("load",()=>{preloadAllImages(); setTimeout(()=>{document.getElementById("bootCover").style.opacity="0";setTimeout(()=>document.getElementById("bootCover")?.remove(),420);},180);});
+</script>
+</body>
+</html>
