@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>G-DRAGON Player</title>
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
+  outline:none;
+}
+html,body{
+  touch-action:manipulation;
+  background:#000;
+}
+::selection{background:transparent;}
+:root{
+  --record-size:280px;
+  --sleeve-size:300px;
+  --scene-center-y:170px;
+  --left-x:-140px;
+}
+body{
+  min-height:100vh;
+  background:radial-gradient(circle at top,rgba(255,255,255,.08),transparent 34%),#000;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  overflow-x:hidden;
+}
+.container{
+  width:100%;
+  max-width:520px;
+  text-align:center;
+}
+.artist{
+  font-size:16px;
+  letter-spacing:6px;
+  color:#aaa;
+  margin-bottom:18px;
+}
+.song{
+  min-height:78px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 16px;
+  margin-bottom:16px;
+  font-size:34px;
+  font-weight:900;
+  line-height:1.05;
+  text-shadow:4px 4px 0 rgba(0,90,255,.55);
+}
+.scene{
+  position:relative;
+  width:100%;
+  max-width:390px;
+  height:345px;
+  margin:0 auto 18px;
+  overflow:visible;
+}
+.sleeve{
+  position:absolute;
+  width:var(--sleeve-size);
+  height:var(--sleeve-size);
+  left:50%;
+  top:calc(var(--scene-center-y) - var(--sleeve-size) / 2);
+  transform:translateX(calc(-50% + var(--sleeve-x,0px)));
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  pointer-events:none;
+  opacity:1;
+  visibility:visible;
+  transition:
+    transform .78s cubic-bezier(.22,.9,.18,1),
+    opacity .42s ease,
+    visibility 0s linear .42s;
+}
+.sleeve.back{
+  z-index:2;
+  background-image:url("images/sleeve-back.jpg");
+  filter:brightness(.82) drop-shadow(0 22px 38px rgba(0,0,0,.55));
+}
+.sleeve.front{
+  z-index:5;
+  background-image:url("images/sleeve-top.png");
+  filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));
+}
+.sleeve.left{--sleeve-x:var(--left-x);}
+.sleeve.hidden{opacity:0;visibility:hidden;}
+.record{
+  position:absolute;
+  width:var(--record-size);
+  height:var(--record-size);
+  left:50%;
+  top:calc(var(--scene-center-y) - var(--record-size) / 2);
+  transform:translateX(calc(-50% + var(--record-x,0px))) scale(var(--record-scale,1));
+  transform-origin:center center;
+  z-index:3;
+  cursor:pointer;
+  transition:transform .86s cubic-bezier(.22,.9,.18,1),filter .35s ease;
+}
+.record.left{--record-x:var(--left-x);}
+.record.inside{--record-scale:.78;filter:brightness(.88);}
+.disc-shell{
+  position:relative;
+  width:100%;
+  height:100%;
+  transform-style:preserve-3d;
+}
+.disc-shell.flip{animation:flipDisc .78s cubic-bezier(.22,.9,.18,1);}
+.disc{
+  position:relative;
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  overflow:hidden;
+  background:#050505;
+  animation:spin 8.5s linear infinite;
+  animation-play-state:paused;
+  box-shadow:
+    0 30px 65px rgba(0,0,0,.75),
+    0 0 0 1px rgba(255,255,255,.08),
+    inset 0 0 45px rgba(255,255,255,.045),
+    inset 0 0 70px rgba(0,0,0,.75);
+}
+.disc.playing{animation-play-state:running;}
+.art{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background-size:cover;
+  background-position:center;
+  z-index:1;
+}
+.grooves{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  z-index:2;
+  pointer-events:none;
+  mix-blend-mode:screen;
+  background:
+    repeating-radial-gradient(circle,transparent 0,transparent 3px,rgba(0,0,0,.23) 4px,rgba(0,0,0,.23) 5px),
+    radial-gradient(circle at 31% 23%,rgba(255,255,255,.23),transparent 17%),
+    linear-gradient(130deg,transparent 8%,rgba(255,255,255,.17) 20%,transparent 34%,transparent 64%,rgba(255,255,255,.07) 75%,transparent 88%);
+}
+.disc::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  z-index:3;
+  pointer-events:none;
+  background:
+    radial-gradient(circle,transparent 0 36%,rgba(0,0,0,.10) 45%,rgba(0,0,0,.33) 75%,rgba(0,0,0,.68) 100%),
+    linear-gradient(135deg,rgba(255,255,255,.16),transparent 25%,transparent 70%,rgba(255,255,255,.08));
+}
+.label{
+  position:absolute;
+  width:92px;
+  height:92px;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  z-index:4;
+  pointer-events:none;
+  background:
+    radial-gradient(circle,rgba(255,255,255,.08) 0 16px,rgba(0,0,0,.12) 17px 30px,rgba(255,255,255,.08) 31px 46px,rgba(0,0,0,.18) 47px 100%);
+  box-shadow:
+    0 0 0 6px rgba(0,0,0,.72),
+    inset 0 0 0 1px rgba(255,255,255,.10),
+    0 8px 20px rgba(0,0,0,.45);
+}
+.hole{
+  position:absolute;
+  width:10px;
+  height:10px;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  z-index:6;
+  background:#050505;
+  border:1px solid rgba(255,255,255,.35);
+}
+.tonearm{
+  position:absolute;
+  right:-18px;
+  top:6px;
+  width:184px;
+  height:150px;
+  z-index:12;
+  pointer-events:none;
+  opacity:1;
+  transition:opacity .35s ease;
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,.55));
+}
+.tonearm.hidden{opacity:0;}
+.arm-base{
+  position:absolute;
+  right:0;
+  top:0;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  z-index:3;
+  background:radial-gradient(circle at 35% 30%,#fafafa 0 8%,#aaa 35%,#222 70%,#050505 100%);
+  box-shadow:0 10px 22px rgba(0,0,0,.65),inset 0 2px 5px rgba(255,255,255,.3),inset 0 -6px 10px rgba(0,0,0,.5);
+}
+.arm-pivot{
+  position:absolute;
+  right:19px;
+  top:19px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  z-index:4;
+  background:radial-gradient(circle at 30% 30%,#fff,#aaa 45%,#444 70%,#111 100%);
+}
+.arm{
+  position:absolute;
+  right:28px;
+  top:26px;
+  width:150px;
+  height:82px;
+  z-index:2;
+  transform-origin:138px 2px;
+  transform:rotate(18deg);
+  transition:transform .48s cubic-bezier(.2,.85,.2,1);
+}
+.arm.on{transform:rotate(-22deg);}
+.arm-bar{
+  position:absolute;
+  right:0;
+  top:0;
+  width:138px;
+  height:10px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#fff,#d8d8d8 22%,#777 56%,#f2f2f2 100%);
+  box-shadow:0 6px 12px rgba(0,0,0,.35),inset 0 1px 2px rgba(255,255,255,.55);
+}
+.weight{
+  position:absolute;
+  width:24px;
+  height:16px;
+  right:124px;
+  top:-4px;
+  border-radius:10px;
+  background:linear-gradient(180deg,#ddd,#777 48%,#2e2e2e 100%);
+}
+.head{
+  position:absolute;
+  width:28px;
+  height:18px;
+  left:0;
+  top:-4px;
+  border-radius:4px 4px 6px 6px;
+  background:linear-gradient(180deg,#eee,#999 42%,#333 100%);
+}
+.needle{
+  position:absolute;
+  width:14px;
+  height:30px;
+  left:3px;
+  top:12px;
+}
+.needle::before{
+  content:"";
+  position:absolute;
+  left:2px;
+  top:0;
+  width:9px;
+  height:12px;
+  border-radius:2px;
+  background:linear-gradient(180deg,#eee,#888 45%,#222 100%);
+}
+.needle::after{
+  content:"";
+  position:absolute;
+  left:6px;
+  top:10px;
+  width:2px;
+  height:17px;
+  background:linear-gradient(180deg,#eee,#575757 75%,#111 100%);
+  transform:skewX(-10deg);
+}
+.subtitle{
+  color:#777;
+  font-size:12px;
+  letter-spacing:3.5px;
+  margin-bottom:18px;
+}
+.progress-area{
+  width:100%;
+  max-width:340px;
+  margin:0 auto 22px;
+}
+.progress-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.play-btn{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-size:15px;
+  cursor:pointer;
+  flex:0 0 auto;
+}
+.play-btn:disabled{opacity:.35;}
+.progress{
+  flex:1;
+  height:5px;
+  border-radius:999px;
+  background:rgba(255,255,255,.15);
+  overflow:hidden;
+  cursor:pointer;
+}
+.fill{
+  width:0%;
+  height:100%;
+  border-radius:inherit;
+  background:#fff;
+}
+.time{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  color:#777;
+  font-size:12px;
+  letter-spacing:1px;
+  padding-left:46px;
+}
+.random{
+  border:none;
+  padding:18px 36px;
+  border-radius:999px;
+  cursor:pointer;
+  font-size:16px;
+  font-weight:800;
+  background:#fff;
+  color:#000;
+  box-shadow:0 15px 35px rgba(255,255,255,.12);
+}
+.random:disabled{opacity:.55;cursor:not-allowed;}
+audio{display:none;}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes flipDisc{0%{transform:scaleX(1)}50%{transform:scaleX(.05);filter:brightness(1.35)}100%{transform:scaleX(1)}}
+@media(max-width:430px){
+  :root{
+    --record-size:260px;
+    --sleeve-size:280px;
+    --left-x:-130px;
+    --scene-center-y:166px;
+  }
+  .scene{height:330px;}
+  .label{width:86px;height:86px;}
+  .tonearm{
+    right:-28px;
+    top:4px;
+    transform:scale(.86);
+    transform-origin:top right;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="artist">G-DRAGON</div>
+  <div class="song" id="title">🌼 SURPRISE ME</div>
+
+  <div class="scene">
+    <div class="sleeve back" id="sleeveBack"></div>
+
+    <div class="record inside" id="record">
+      <div class="disc-shell" id="discShell">
+        <div class="disc" id="disc">
+          <div class="art" id="art"></div>
+          <div class="label"></div>
+          <div class="grooves"></div>
+          <div class="hole"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sleeve front" id="sleeveFront"></div>
+
+    <div class="tonearm hidden" id="tonearm">
+      <div class="arm-base"></div>
+      <div class="arm-pivot"></div>
+      <div class="arm" id="arm">
+        <div class="arm-bar"></div>
+        <div class="weight"></div>
+        <div class="head"></div>
+        <div class="needle"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subtitle">SCAN • TAP • DISCOVER</div>
+
+  <div class="progress-area">
+    <div class="progress-row">
+      <button class="play-btn" id="playBtn" type="button">▶</button>
+      <div class="progress" id="progress"><div class="fill" id="fill"></div></div>
+    </div>
+    <div class="time"><span id="now">0:00</span><span id="total">0:00</span></div>
+  </div>
+
+  <button class="random" id="randomBtn">🌼 SURPRISE ME</button>
+  <audio id="audio" preload="metadata"></audio>
+</div>
+
+<script>
+const gdImages=["images/Gdragon1.jpg","images/Gdragon2.jpg"];
+
+const songs=[
+  {title:"A Boy",file:"music/A_Boy-GDragon.mp3",images:["images/Heartbreaker1.jpg","images/Heartbreaker2.jpg"]},
+  {title:"BLACK",file:"music/Black-GDragon.mp3",images:["images/Coup_d'Etat1.jpg","images/Coup_d'Etat2.jpg"]},
+  {title:"Breathe",file:"music/Breathe-GDragon.mp3",images:["images/Heartbreaker1.jpg","images/Heartbreaker2.jpg"]},
+  {title:"Bullshit",file:"music/Bullshit-GDragon.mp3",images:["images/Untitled,(2014)1.jpg","images/Untitled,(2014)2.jpg"]},
+  {title:"COUP D'ETAT",file:"music/Coup_d'Etat-GDragon.mp3",images:["images/Coup_d'Etat1.jpg","images/Coup_d'Etat2.jpg"]},
+  {title:"Crayon",file:"music/Crayon-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]},
+  {title:"CROOKED",file:"music/Crooked-GDragon.mp3",images:["images/Coup_d'Etat1.jpg","images/Coup_d'Etat2.jpg"]},
+  {title:"Heartbreaker",file:"music/Heartbreaker-GDragon.mp3",images:["images/Heartbreaker1.jpg","images/Heartbreaker2.jpg"]},
+  {title:"HOME SWEET HOME",file:"music/Home_Sweet_Home-GDragon.mp3",images:["images/ubermensch1.jpg","images/ubermensch2.png"]},
+  {title:"Missing You",file:"music/Missing_You-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]},
+  {title:"One Of A Kind",file:"music/One_Of_A_Kind-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]},
+  {title:"POWER",file:"music/Power-GDragon.mp3",images:["images/Power1.jpg","images/Power2.jpg"]},
+  {title:"R.O.D.",file:"music/R.O.D-GDragon.mp3",images:["images/Coup_d'Etat1.jpg","images/Coup_d'Etat2.jpg"]},
+  {title:"That XX",file:"music/That_XX-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]},
+  {title:"Today",file:"music/Today-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]},
+  {title:"TOO BAD",file:"music/Too_Bad-GDragon.mp3",images:["images/ubermensch1.jpg","images/ubermensch2.png"]},
+  {title:"Untitled, 2014",file:"music/Untitled,2014-GDragon.mp3",images:["images/Untitled,(2014)1.jpg","images/Untitled,(2014)2.jpg"]},
+  {title:"WHO YOU?",file:"music/Who_You_-GDragon.mp3",images:["images/Coup_d'Etat1.jpg","images/Coup_d'Etat2.jpg"]},
+  {title:"Window",file:"music/Window-GDragon.mp3",images:["images/Heartbreaker1.jpg","images/Heartbreaker2.jpg"]},
+  {title:"Without You",file:"music/Without_You-GDragon.mp3",images:["images/OneOfAKind1.jpg","images/OneOfAKind2.jpg"]}
+];
+
+const audio=document.getElementById("audio");
+const titleEl=document.getElementById("title");
+const sleeveBack=document.getElementById("sleeveBack");
+const sleeveFront=document.getElementById("sleeveFront");
+const record=document.getElementById("record");
+const discShell=document.getElementById("discShell");
+const disc=document.getElementById("disc");
+const art=document.getElementById("art");
+const tonearm=document.getElementById("tonearm");
+const arm=document.getElementById("arm");
+const playBtn=document.getElementById("playBtn");
+const randomBtn=document.getElementById("randomBtn");
+const progress=document.getElementById("progress");
+const fill=document.getElementById("fill");
+const nowEl=document.getElementById("now");
+const totalEl=document.getElementById("total");
+
+let currentSong=null;
+let albumMode=true;
+let imageIndex=0;
+let imageTimer=null;
+let playlist=[];
+let playlistIndex=0;
+let started=false;
+let busy=false;
+let clickTimer=null;
+let clickCount=0;
+
+function wait(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+
+function shuffle(list){
+  const a=[...list];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function nextSong(){
+  if(!started){
+    playlist=shuffle(songs);
+    playlistIndex=0;
+    started=true;
+    return playlist[playlistIndex];
+  }
+  playlistIndex++;
+  if(playlistIndex>=playlist.length){
+    playlist=shuffle(songs);
+    playlistIndex=0;
+  }
+  return playlist[playlistIndex];
+}
+
+function imagesForMode(){
+  if(!currentSong) return gdImages;
+  return albumMode ? currentSong.images : gdImages;
+}
+
+function setArt(src){
+  art.dataset.src=src;
+  art.style.backgroundImage=`url('${src}')`;
+}
+
+function forceAlbum(song){
+  currentSong=song;
+  albumMode=true;
+  imageIndex=0;
+  setArt(song.images[0]);
+}
+
+function renderArt(){
+  const imgs=imagesForMode();
+  setArt(imgs[imageIndex % imgs.length]);
+}
+
+function preloadImages(){
+  const imgs=[...gdImages];
+  songs.forEach(song=>song.images.forEach(img=>imgs.push(img)));
+  imgs.forEach(src=>{
+    const img=new Image();
+    img.src=src;
+  });
+}
+
+function setSleeveLeft(left){
+  sleeveBack.classList.toggle("left",left);
+  sleeveFront.classList.toggle("left",left);
+  record.classList.toggle("left",left);
+}
+
+function showSleeve(){
+  sleeveBack.classList.remove("hidden");
+  sleeveFront.classList.remove("hidden");
+}
+
+function hideSleeve(){
+  sleeveBack.classList.add("hidden");
+  sleeveFront.classList.add("hidden");
+}
+
+function armOn(){
+  tonearm.classList.remove("hidden");
+  arm.classList.add("on");
+}
+
+function armOff(){
+  arm.classList.remove("on");
+}
+
+function startImages(){
+  clearInterval(imageTimer);
+  if(audio.paused || busy || !currentSong) return;
+  imageTimer=setInterval(()=>{
+    if(audio.paused || busy) return;
+    imageIndex=(imageIndex+1)%imagesForMode().length;
+    renderArt();
+  },5000);
+}
+
+function stopImages(){
+  clearInterval(imageTimer);
+}
+
+function fmt(sec){
+  if(!Number.isFinite(sec)) return "0:00";
+  return `${Math.floor(sec/60)}:${String(Math.floor(sec%60)).padStart(2,"0")}`;
+}
+
+function resetProgress(){
+  fill.style.width="0%";
+  nowEl.textContent="0:00";
+  totalEl.textContent="0:00";
+}
+
+function loadAudio(song){
+  audio.src=song.file;
+  audio.load();
+}
+
+function tryPlay(){
+  try{
+    const promise=audio.play();
+    if(promise && typeof promise.catch==="function"){
+      promise.catch(()=>{ titleEl.textContent=currentSong ? currentSong.title+" • tap play" : "Tap play"; });
+    }
+  }catch(error){
+    titleEl.textContent=currentSong ? currentSong.title+" • tap play" : "Tap play";
+  }
+}
+
+async function changeSong(song){
+  if(busy) return;
+  busy=true;
+  randomBtn.disabled=true;
+  playBtn.disabled=true;
+
+  try{
+    stopImages();
+    audio.pause();
+    disc.classList.remove("playing");
+    armOff();
+
+    if(currentSong && !albumMode){
+      forceAlbum(currentSong);
+      await wait(80);
+    }
+
+    if(currentSong){
+      record.classList.add("inside");
+      await wait(280);
+      showSleeve();
+      await wait(560);
+      setSleeveLeft(true);
+      await wait(760);
+    }else{
+      showSleeve();
+      await wait(260);
+    }
+
+    forceAlbum(song);
+    resetProgress();
+    titleEl.textContent=song.title;
+    loadAudio(song);
+
+    if(!record.classList.contains("left")){
+      setSleeveLeft(true);
+      await wait(780);
+    }
+
+    tonearm.classList.remove("hidden");
+
+    forceAlbum(song);
+    record.classList.remove("inside");
+    record.classList.remove("left");
+    await wait(900);
+
+    hideSleeve();
+    await wait(260);
+
+    forceAlbum(song);
+    titleEl.textContent=song.title;
+    tryPlay();
+  }finally{
+    busy=false;
+    randomBtn.disabled=false;
+    playBtn.disabled=false;
+  }
+}
+
+async function switchMode(){
+  if(busy || !currentSong) return;
+  busy=true;
+  stopImages();
+  armOff();
+  await wait(180);
+
+  discShell.classList.remove("flip");
+  void discShell.offsetWidth;
+  discShell.classList.add("flip");
+
+  await wait(390);
+  albumMode=!albumMode;
+  imageIndex=0;
+  renderArt();
+  titleEl.textContent=albumMode ? "💿 ALBUM MODE" : "👑 G-DRAGON MODE";
+
+  await wait(430);
+  discShell.classList.remove("flip");
+  await wait(120);
+  titleEl.textContent=currentSong.title;
+
+  if(!audio.paused){
+    armOn();
+    startImages();
+  }
+  busy=false;
+}
+
+function nextImage(){
+  if(busy || !currentSong) return;
+  imageIndex=(imageIndex+1)%imagesForMode().length;
+  renderArt();
+  if(!audio.paused) startImages();
+}
+
+randomBtn.addEventListener("click",()=>changeSong(nextSong()));
+
+playBtn.addEventListener("click",()=>{
+  if(!currentSong) return;
+  if(audio.paused) tryPlay();
+  else audio.pause();
+});
+
+record.addEventListener("click",()=>{
+  if(busy || !currentSong) return;
+  clickCount++;
+  clearTimeout(clickTimer);
+  clickTimer=setTimeout(()=>{
+    if(clickCount===1) nextImage();
+    if(clickCount>=2) switchMode();
+    clickCount=0;
+  },240);
+});
+
+audio.addEventListener("play",()=>{
+  disc.classList.add("playing");
+  armOn();
+  playBtn.textContent="Ⅱ";
+  startImages();
+});
+
+audio.addEventListener("pause",()=>{
+  disc.classList.remove("playing");
+  armOff();
+  playBtn.textContent="▶";
+  stopImages();
+});
+
+audio.addEventListener("ended",()=>changeSong(nextSong()));
+
+audio.addEventListener("loadedmetadata",()=>{
+  totalEl.textContent=fmt(audio.duration);
+});
+
+audio.addEventListener("timeupdate",()=>{
+  if(!Number.isFinite(audio.duration) || audio.duration<=0) return;
+  fill.style.width=`${(audio.currentTime/audio.duration)*100}%`;
+  nowEl.textContent=fmt(audio.currentTime);
+  totalEl.textContent=fmt(audio.duration);
+});
+
+progress.addEventListener("click",event=>{
+  if(!Number.isFinite(audio.duration) || audio.duration<=0) return;
+  const rect=progress.getBoundingClientRect();
+  const percent=(event.clientX-rect.left)/rect.width;
+  audio.currentTime=Math.max(0,Math.min(audio.duration,audio.duration*percent));
+});
+
+document.addEventListener("contextmenu",event=>event.preventDefault());
+
+preloadImages();
+renderArt();
+showSleeve();
+setSleeveLeft(false);
+record.classList.add("inside");
+</script>
+</body>
+</html>
